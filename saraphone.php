@@ -52,7 +52,9 @@ else {
 $language = new text;
 $text = $language->get();
 
-$sql3 = "SELECT distinct d.device_mac_address, extension,d.device_template,display_name,effective_caller_id_name,outbound_caller_id_number FROM v_extension_users, v_extensions, v_users,v_device_lines AS l, v_devices AS d WHERE ((l.user_id = extension) AND (v_users.user_uuid = v_extension_users.user_uuid) AND (v_extensions.extension_uuid = v_extension_users.extension_uuid)  AND (v_extensions.domain_uuid = '" . $_SESSION["domain_uuid"] . "') AND (l.user_id=extension) AND (l.device_uuid = d.device_uuid) AND (v_users.user_uuid = '" . $_SESSION['user_uuid'] . "') AND (d.domain_uuid = '" . $_SESSION["domain_uuid"] . "')) ORDER BY extension, d.device_mac_address asc";
+$sql3 = "SELECT distinct d.device_mac_address, extension,d.device_template,display_name,effective_caller_id_name,outbound_caller_id_number FROM v_extension_users, v_extensions, v_users,v_device_lines AS l, v_devices AS d 
+WHERE ((l.user_id = extension) AND (v_users.user_uuid = v_extension_users.user_uuid) AND (v_extensions.extension_uuid = v_extension_users.extension_uuid)  
+AND (v_extensions.domain_uuid = '" . $_SESSION["domain_uuid"] . "') AND (l.user_id=extension) AND (l.device_uuid = d.device_uuid) AND (v_users.user_uuid = '" . $_SESSION['user_uuid'] . "') AND (d.domain_uuid = '" . $_SESSION["domain_uuid"] . "')) ORDER BY extension, d.device_mac_address asc";
 $database3 = new database;
 $rows3 = $database3->select($sql3, NULL, 'all');
 
@@ -62,6 +64,7 @@ header('Cache-Control: post-check=0, pre-check=0', FALSE);
 header('Pragma: no-cache');
 
 //show the content
+echo "<!DOCTYPE html>";
 echo "<head> \n";
 echo "    <meta charset=\"utf-8\"> \n";
 echo "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"> \n";
@@ -80,12 +83,14 @@ echo "\n";
 echo "<body> \n";
 
 $wanted_device = $_GET['wanted_device'] ;
+//print '<pre>';
+//var_dump($rows3);
+//print '</pre>';
+if( strlen($rows3->result[0]['device_mac_address']) ){
 
-if( strlen($rows3[0]['device_mac_address']) ){
-
-	if( ! strlen($rows3[1]['device_mac_address']) ){
+	if( ! strlen($rows3->result[1]['device_mac_address']) ){
 		//user has one and only one device, go for it directly
-		$wanted_device = $rows3[0]['device_mac_address'] ;
+		$wanted_device = $rows3->result[0]['device_mac_address'] ;
 	}
 }
 
@@ -155,9 +160,9 @@ echo "</script> \n";
 	$database5 = new database;
 	$rows5 = $database5->select($sql5, NULL, 'all');
 
-	$user_extension = $rows5[0]['extension'];
-	$user_password = $rows5[0]['password'];
-	$effective_caller_id_name = $rows5[0]['effective_caller_id_name'];
+	$user_extension = $rows5->result[0]['extension'];
+	$user_password = $rows5->result[0]['password'];
+	$effective_caller_id_name = $rows5->result[0]['effective_caller_id_name'];
 	$sql4 = "SELECT d.device_mac_address, extension,d.device_template,display_name,v_extensions.password,effective_caller_id_name,outbound_caller_id_number,k.device_key_label, k.device_key_value, k.device_key_id, register_expires, sip_transport, sip_port, server_address, outbound_proxy_primary FROM v_extension_users, v_extensions, v_users,v_device_lines AS l, v_devices AS d, v_device_keys AS k WHERE ((l.user_id = extension) AND (v_users.user_uuid = v_extension_users.user_uuid) AND (v_extensions.extension_uuid = v_extension_users.extension_uuid)  AND (v_extensions.domain_uuid = '" . $_SESSION["domain_uuid"] . "') AND (l.user_id=extension) AND (l.device_uuid = d.device_uuid) AND (k.device_uuid = d.device_uuid) AND (v_users.user_uuid = '" . $_SESSION['user_uuid'] . "') AND (d.device_mac_address = '" . $wanted_device . "') ) ORDER BY extension, d.device_mac_address, k.device_key_id asc LIMIT 60";
 	$database4 = new database;
 	$rows = $database4->select($sql4, NULL, 'all');
@@ -202,64 +207,64 @@ echo "</script> \n";
 	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"port\" value=\"".$_SESSION['saraphone']['wss_port']['text']."\" /></td><td>&nbsp;WSS&nbsp;Proxy&nbsp;Port&nbsp;</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres1\" value=\"" . $rows[0]['device_key_value'] . "\" /></td><td>&nbsp;BLF1&nbsp;</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres1\" value=\"" . $rows->result[0]['device_key_value'] . "\" /></td><td>&nbsp;BLF1&nbsp;</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres1_label\" value=\"" . $rows[0]['device_key_label'] . "\" /></td><td>&nbsp;BLF1&nbsp;".$text['label']."</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres1_label\" value=\"" . $rows->result[0]['device_key_label'] . "\" /></td><td>&nbsp;BLF1&nbsp;".$text['label']."</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres2\" value=\"" . $rows[1]['device_key_value'] . "\" /></td><td>&nbsp;BLF2&nbsp;</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres2\" value=\"" . $rows->result[1]['device_key_value'] . "\" /></td><td>&nbsp;BLF2&nbsp;</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres2_label\" value=\"" . $rows[1]['device_key_label'] . "\" /></td><td>&nbsp;BLF2&nbsp;".$text['label']."</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres2_label\" value=\"" . $rows->result[1]['device_key_label'] . "\" /></td><td>&nbsp;BLF2&nbsp;".$text['label']."</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres3\" value=\"" . $rows[2]['device_key_value'] . "\" /></td><td>&nbsp;BLF3&nbsp;</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres3\" value=\"" . $rows->result[2]['device_key_value'] . "\" /></td><td>&nbsp;BLF3&nbsp;</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres3_label\" value=\"" . $rows[2]['device_key_label'] . "\" /></td><td>&nbsp;BLF3&nbsp;".$text['label']."</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres3_label\" value=\"" . $rows->result[2]['device_key_label'] . "\" /></td><td>&nbsp;BLF3&nbsp;".$text['label']."</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres4\" value=\"" . $rows[3]['device_key_value'] . "\" /></td><td>&nbsp;BLF4&nbsp;</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres4\" value=\"" . $rows->result[3]['device_key_value'] . "\" /></td><td>&nbsp;BLF4&nbsp;</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres4_label\" value=\"" . $rows[3]['device_key_label'] . "\" /></td><td>&nbsp;BLF4&nbsp;".$text['label']."</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres4_label\" value=\"" . $rows->result[3]['device_key_label'] . "\" /></td><td>&nbsp;BLF4&nbsp;".$text['label']."</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres5\" value=\"" . $rows[4]['device_key_value'] . "\" /></td><td>&nbsp;BLF5&nbsp;</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres5\" value=\"" . $rows->result[4]['device_key_value'] . "\" /></td><td>&nbsp;BLF5&nbsp;</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres5_label\" value=\"" . $rows[4]['device_key_label'] . "\" /></td><td>&nbsp;BLF5&nbsp;".$text['label']."</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres5_label\" value=\"" . $rows->result[4]['device_key_label'] . "\" /></td><td>&nbsp;BLF5&nbsp;".$text['label']."</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres6\" value=\"" . $rows[5]['device_key_value'] . "\" /></td><td>&nbsp;BLF6&nbsp;</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres6\" value=\"" . $rows->result[5]['device_key_value'] . "\" /></td><td>&nbsp;BLF6&nbsp;</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres6_label\" value=\"" . $rows[5]['device_key_label'] . "\" /></td><td>&nbsp;BLF6&nbsp;".$text['label']."</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres6_label\" value=\"" . $rows->result[5]['device_key_label'] . "\" /></td><td>&nbsp;BLF6&nbsp;".$text['label']."</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres7\" value=\"" . $rows[6]['device_key_value'] . "\" /></td><td>&nbsp;BLF7&nbsp;</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres7\" value=\"" . $rows->result[6]['device_key_value'] . "\" /></td><td>&nbsp;BLF7&nbsp;</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres7_label\" value=\"" . $rows[6]['device_key_label'] . "\" /></td><td>&nbsp;BLF7&nbsp;".$text['label']."</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres7_label\" value=\"" . $rows->result[6]['device_key_label'] . "\" /></td><td>&nbsp;BLF7&nbsp;".$text['label']."</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres8\" value=\"" . $rows[7]['device_key_value'] . "\" /></td><td>&nbsp;BLF8&nbsp;</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres8\" value=\"" . $rows->result[7]['device_key_value'] . "\" /></td><td>&nbsp;BLF8&nbsp;</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres8_label\" value=\"" . $rows[7]['device_key_label'] . "\" /></td><td>&nbsp;BLF8&nbsp;".$text['label']."</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres8_label\" value=\"" . $rows->result[7]['device_key_label'] . "\" /></td><td>&nbsp;BLF8&nbsp;".$text['label']."</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres9\" value=\"" . $rows[8]['device_key_value'] . "\" /></td><td>&nbsp;BLF9&nbsp;</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres9\" value=\"" . $rows->result[8]['device_key_value'] . "\" /></td><td>&nbsp;BLF9&nbsp;</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres9_label\" value=\"" . $rows[8]['device_key_label'] . "\" /></td><td>&nbsp;BLF9&nbsp;".$text['label']."</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres9_label\" value=\"" . $rows->result[8]['device_key_label'] . "\" /></td><td>&nbsp;BLF9&nbsp;".$text['label']."</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres10\" value=\"" . $rows[9]['device_key_value'] . "\" /></td><td>&nbsp;BLF10&nbsp;</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres10\" value=\"" . $rows->result[9]['device_key_value'] . "\" /></td><td>&nbsp;BLF10&nbsp;</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                                <tr> \n";
-	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres10_label\" value=\"" . $rows[9]['device_key_label'] . "\" /></td><td>&nbsp;BLF10&nbsp;".$text['label']."</td> \n";
+	echo "                                                    <td> <input style=\"background-color: black;\" size=25 id=\"pres10_label\" value=\"" . $rows->result[9]['device_key_label'] . "\" /></td><td>&nbsp;BLF10&nbsp;".$text['label']."</td> \n";
 	echo "                                                </tr> \n";
 	echo "                                            </table> \n";
 	echo "                                        </div> \n";
